@@ -85,4 +85,68 @@ window.addEventListener("resize", () => {
   camera.aspect = window.innerWidth / window.innerHeight;
   camera.updateProjectionMatrix();
   renderer.setSize(window.innerWidth, window.innerHeight);
+  updateRoutePaths(); // Update paths on resize
+});
+
+// Route paths - lines from sphere converging towards "tellings"
+function updateRoutePaths() {
+  const svg = document.querySelector('.route-svg');
+  const line1 = document.querySelector('.route-line1');
+  const line2 = document.querySelector('.route-line2');
+  const line3 = document.querySelector('.route-line3');
+  
+  if (!svg || !line1 || !line2 || !line3) return;
+  
+  // Set SVG size to viewport
+  svg.setAttribute('width', window.innerWidth);
+  svg.setAttribute('height', window.innerHeight);
+  svg.setAttribute('viewBox', `0 0 ${window.innerWidth} ${window.innerHeight}`);
+  
+  // Sphere position (bottom: 40px, left: 40px, size: 100px)
+  const sphereX = 40 + 50; // center X
+  const sphereY = window.innerHeight - 40 - 50; // center Y
+  const sphereRightX = 140; // right edge
+  const sphereTopY = window.innerHeight - 140; // top edge
+  const sphereBottomY = window.innerHeight - 40; // bottom edge
+  
+  // "Tellings" approximate center (centered on page)
+  const tellingsX = window.innerWidth / 2;
+  const tellingsY = window.innerHeight / 2;
+  const endX = window.innerWidth - 100; // end point to the right
+  
+  // Path 1: From top of sphere, goes UP first, then curves right, passes above tellings, continues right
+  const path1StartY = sphereTopY - 5;
+  const path1UpY = sphereTopY - 150;
+  const path1TurnX = sphereRightX + 250;
+  const path1AboveTellingsY = tellingsY - 50;
+  const path1 = `M ${sphereRightX} ${path1StartY} Q ${sphereRightX + 80} ${path1UpY}, ${path1TurnX} ${path1UpY + 30} Q ${tellingsX - 100} ${path1AboveTellingsY}, ${tellingsX - 30} ${tellingsY - 35} Q ${tellingsX + 60} ${tellingsY - 30}, ${endX} ${tellingsY - 25}`;
+  line1.setAttribute('d', path1);
+  
+  // Path 2: From middle/side of sphere, goes RIGHT (horizontal), then curves up under tellings, continues right
+  const path2StartY = sphereY;
+  const path2HorizontalEndX = tellingsX - 140;
+  const path2UnderTellingsY = tellingsY + 50;
+  const path2PassY = tellingsY + 35;
+  const path2 = `M ${sphereRightX} ${path2StartY} L ${path2HorizontalEndX} ${path2StartY + 10} Q ${tellingsX - 80} ${path2UnderTellingsY}, ${tellingsX - 40} ${path2PassY} Q ${tellingsX + 40} ${path2PassY - 5}, ${tellingsX + 100} ${tellingsY + 30} L ${endX} ${tellingsY + 28}`;
+  line2.setAttribute('d', path2);
+  
+  // Path 3: From lower part of sphere, curves right and slightly down, then up toward tellings area from below
+  const path3StartY = sphereBottomY - 10;
+  const path3DownY = path3StartY + 100;
+  const path3RightX = sphereRightX + 220;
+  const path3ApproachY = tellingsY + 60;
+  const path3 = `M ${sphereRightX} ${path3StartY} Q ${path3RightX - 50} ${path3DownY}, ${path3RightX} ${path3DownY - 20} Q ${tellingsX - 90} ${path3ApproachY}, ${tellingsX - 50} ${tellingsY + 55} Q ${tellingsX + 20} ${tellingsY + 52}, ${tellingsX + 120} ${tellingsY + 48} L ${endX} ${tellingsY + 50}`;
+  line3.setAttribute('d', path3);
+}
+
+// Initialize paths on load
+if (document.readyState === 'loading') {
+  document.addEventListener('DOMContentLoaded', updateRoutePaths);
+} else {
+  updateRoutePaths();
+}
+
+// Also update on window load to ensure everything is rendered
+window.addEventListener('load', () => {
+  setTimeout(updateRoutePaths, 100);
 });
