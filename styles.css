@@ -184,3 +184,58 @@ canvas#bg {
   margin-bottom: 2rem;
   font-weight: 300;
 }
+
+.cross-lines {
+  position: absolute;
+  left: 140px; /* same as before, next to sphere */
+  top: 50%;
+  transform: translateY(-50%);
+  width: calc(100% - 180px);
+  height: 120px;
+  pointer-events: none;
+
+  z-index: 0; /* behind text which is z-index: 2 */
+}
+
+
+.cross-lines .line {
+  position: absolute;
+  width: 100%;
+  height: 1.5px;
+  background: linear-gradient(to right, #999, #ccc, #999);
+  opacity: 0.8;
+  animation: lineMove 5s ease-in-out infinite;
+  transform-origin: left;
+}
+
+.cross-lines .line:nth-child(1) {
+  top: 0;
+  animation-delay: 0s;
+}
+.cross-lines .line:nth-child(2) {
+  top: 50%;
+  animation-delay: 1s;
+}
+.cross-lines .line:nth-child(3) {
+  bottom: 0;
+  animation-delay: 2s;
+}
+
+@keyframes lineMove {
+  0% {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+  20% {
+    transform: scaleX(1);
+    opacity: 0.9;
+  }
+  80% {
+    transform: scaleX(1);
+    opacity: 0.9;
+  }
+  100% {
+    transform: scaleX(0);
+    opacity: 0;
+  }
+}

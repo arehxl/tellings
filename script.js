@@ -3,13 +3,8 @@ const scene = new THREE.Scene();
 scene.background = new THREE.Color(0xf4f4f4);
 
 // Camera
-const camera = new THREE.PerspectiveCamera(
-  75,
-  window.innerWidth / window.innerHeight,
-  0.1,
-  1000
-);
-camera.position.set(0, 0, 6); // move camera a bit back for wider view
+const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+camera.position.set(0, 0, 8);
 
 // Renderer
 const renderer = new THREE.WebGLRenderer({
@@ -17,6 +12,7 @@ const renderer = new THREE.WebGLRenderer({
   antialias: true,
 });
 renderer.setSize(window.innerWidth, window.innerHeight);
+renderer.setPixelRatio(window.devicePixelRatio);
 
 // Lights
 const ambientLight = new THREE.AmbientLight(0xffffff, 1);
@@ -31,44 +27,31 @@ for (let i = 0; i < 8; i++) {
   const geometry = new THREE.SphereGeometry(0.3, 32, 32);
   const material = new THREE.MeshStandardMaterial({ color: 0x000000 });
   const sphere = new THREE.Mesh(geometry, material);
-  sphere.position.set(
-    Math.random() * 8 - 4,
-    Math.random() * 6 - 3,
-    Math.random() * 4 - 2
-  );
+  sphere.position.set(Math.random() * 8 - 4, Math.random() * 6 - 3, Math.random() * 4 - 2);
   scene.add(sphere);
   spheres.push(sphere);
 }
 
 // Rotating box
 const boxGeometry = new THREE.BoxGeometry(1, 0.7, 0.5);
-const boxMaterial = new THREE.MeshStandardMaterial({ color: 0x888888 });
+const boxMaterial = new THREE.MeshStandardMaterial({ color: 0x888888, metalness: 0.8, roughness: 0.3 });
 const box = new THREE.Mesh(boxGeometry, boxMaterial);
-box.position.set(0, 0, 0);
 scene.add(box);
 
-// Silver crossing lines (from left to right)
+// Metallic silver lines (left to right)
 const lines = [];
-const lineMaterial = new THREE.LineBasicMaterial({
+const lineMaterial = new THREE.MeshStandardMaterial({
   color: 0xb0b0b0,
-  transparent: true,
-  opacity: 0.9,
+  metalness: 1,
+  roughness: 0.2,
+  emissive: 0x555555,
+  emissiveIntensity: 0.3,
 });
 
 for (let i = 0; i < 10; i++) {
-  const lineGeometry = new THREE.BufferGeometry();
-  const startX = -6; // further left
-  const endX = 6; // further right
-  const y = (i - 5) * 0.5; // spaced vertically
-  const z = 0.8; // slightly in front of box so visible
-
-  const points = [
-    new THREE.Vector3(startX, y, z),
-    new THREE.Vector3(endX, y, z),
-  ];
-
-  lineGeometry.setFromPoints(points);
-  const line = new THREE.Line(lineGeometry, lineMaterial);
+  const geometry = new THREE.BoxGeometry(8, 0.02, 0.02); // thin rectangle
+  const line = new THREE.Mesh(geometry, lineMaterial);
+  line.position.set(-1, (i - 5) * 0.6, -1.5 + Math.random() * 1); // slightly behind sphere
   scene.add(line);
   lines.push(line);
 }
@@ -87,14 +70,9 @@ function animate() {
   box.rotation.x += 0.01;
   box.rotation.y += 0.01;
 
-  // Subtle motion on lines (gentle wave)
+  // Slight shimmer for the lines
   lines.forEach((line, i) => {
-    const positions = line.geometry.attributes.position.array;
-    for (let j = 0; j < positions.length; j += 3) {
-      positions[j + 2] =
-        0.8 + Math.sin(Date.now() * 0.001 + i + j) * 0.3; // wave along Z
-    }
-    line.geometry.attributes.position.needsUpdate = true;
+    line.material.emissiveIntensity = 0.3 + Math.sin(Date.now() * 0.002 + i) * 0.2;
   });
 
   renderer.render(scene, camera);
